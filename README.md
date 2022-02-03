@@ -9,5 +9,5 @@ Source: Bureau of Labor Statistics  https://www.bls.gov/oes/ \
 Method: download \
 Alumni’ information: \
 Source: LinkedIn \
-Method: web-scrapping \
+Method: web-scrapping 
 
