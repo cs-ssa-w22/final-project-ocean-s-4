@@ -150,7 +150,7 @@ app.layout = html.Div(
                             options=[
                                 {'label': 'Lock camera', 'value': 'locked'}
                             ],
-                            values=[],
+                            value =[],
                             className="dcc_control"
                         ),
                         html.P(
