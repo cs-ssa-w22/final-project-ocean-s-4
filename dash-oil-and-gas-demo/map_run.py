@@ -18,7 +18,6 @@ industries = np.append(df.current_NAICS_title.unique(),'Select all')
 with urlopen('https://raw.githubusercontent.com/plotly/datasets/master/geojson-counties-fips.json') as response:
     counties = json.load(response)
 
-print('a')
 app = dash.Dash(__name__)
 
 app.layout = html.Div([
@@ -34,7 +33,7 @@ app.layout = html.Div([
         ),
     dcc.Graph(id="choropleth"),
     ])
-print('b')
+
 @app.callback(
     Output("choropleth", "figure"), 
     [Input("School", "value"),
