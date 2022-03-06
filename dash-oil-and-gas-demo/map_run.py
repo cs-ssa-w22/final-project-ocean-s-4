@@ -42,10 +42,10 @@ app.layout = html.Div([
 
 def display_choropleth(school, industry):
     if school == 'Select all' and  industry != 'Select all':
-        num = df[(df.current_NAICS_title == industry)].fips.value_counts()
-    if industry == 'Select all' and school != 'Select all':
-        num = df[(df.search_school == school)].fips.value_counts()
-    if industry == 'Select all' and school == 'Select all':
+        num = df[df.current_NAICS_title == industry].fips.value_counts()
+    elif industry == 'Select all' and school != 'Select all':
+        num = df[df.search_school == school].fips.value_counts()
+    elif industry == 'Select all' and school == 'Select all':
         num = df.fips.value_counts()
     else:
         num = df[(df.current_NAICS_title == industry) &
