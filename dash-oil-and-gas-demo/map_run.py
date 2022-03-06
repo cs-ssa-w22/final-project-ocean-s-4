@@ -41,29 +41,31 @@ app.layout = html.Div([
     )
 
 def display_choropleth(school, industry):
+
     if school == 'Select all' and  industry != 'Select all':
-        num = df[df.current_NAICS_title == industry].fips.value_counts()
+        num = df[df.current_NAICS_title == industry][['fips','location']].value_counts()
     elif industry == 'Select all' and school != 'Select all':
-        num = df[df.search_school == school].fips.value_counts()
+        num = df[df.search_school == school][['fips','location']].value_counts()
     elif industry == 'Select all' and school == 'Select all':
-        num = df.fips.value_counts()
+        num = df[['fips','location']].value_counts()
     else:
         num = df[(df.current_NAICS_title == industry) &
-             (df.search_school == school)].fips.value_counts()
+             (df.search_school == school)][['fips','location']].value_counts()
 
     num = num.reset_index()
-    num = num.rename({'index':'fips', 'fips':'counts'}, axis=1)
+    num = num.rename({'index':'fips', 0:'counts'}, axis=1)
 
     with urlopen('https://raw.githubusercontent.com/plotly/datasets/master/geojson-counties-fips.json') as response:
         counties = json.load(response)
 
     fig = px.choropleth_mapbox(num, geojson=counties, locations='fips', color='counts',
-                           color_continuous_scale='fall',
-                           range_color=(0, num[num.fips!='nan'].counts.max()),
+                           color_continuous_scale='fall', hover_name='location',
+                           hover_data={'fips':False},
+                           range_color=(0, num.counts.max()),
                            mapbox_style="carto-positron",
                            zoom=3, center = {"lat": 37.0902, "lon": -95.7129},
                            opacity=0.8,
-                           labels={'counts':'count'}
+                           labels={'counts':'Number of People', 'location':'location'}
                           )
     fig.update_layout(margin={"r":0,"t":0,"l":0,"b":0})
 
