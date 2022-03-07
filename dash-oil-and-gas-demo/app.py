@@ -4,7 +4,8 @@ import pickle
 import copy
 import datetime as dt
 import math
-
+import plotly.express as px
+from urllib.request import urlopen
 import requests
 import pandas as pd
 from flask import Flask
@@ -12,65 +13,29 @@ import dash
 from dash.dependencies import Input, Output, State
 from dash import dcc
 from dash import html
+import pandas as pd
+import numpy as np
+import json
+import plotly.graph_objects as go
+
+
 
 # Multi-dropdown options
-from controls import COUNTIES, WELL_STATUSES, WELL_TYPES, WELL_COLORS
 
 app = dash.Dash(__name__)
 server = app.server
 
-# Create controls
-county_options = [{'label': str(COUNTIES[county]), 'value': str(county)}
-                  for county in COUNTIES]
-
-well_status_options = [{'label': str(WELL_STATUSES[well_status]),
-                        'value': str(well_status)}
-                       for well_status in WELL_STATUSES]
-
-well_type_options = [{'label': str(WELL_TYPES[well_type]),
-                      'value': str(well_type)}
-                     for well_type in WELL_TYPES]
-
 
 # Load data
-df = pd.read_csv('data/wellspublic.csv')
-df['Date_Well_Completed'] = pd.to_datetime(df['Date_Well_Completed'])
-df = df[df['Date_Well_Completed'] > dt.datetime(1960, 1, 1)]
+df = pd.read_csv('complete.csv',
+                 converters={'fips': lambda x: str(x)})
 
-trim = df[['API_WellNo', 'Well_Type', 'Well_Name']]
-trim.index = trim['API_WellNo']
-dataset = trim.to_dict(orient='index')
+schools = np.append(df.search_school.unique(),'Select all')
+industries = np.append(df.current_NAICS_title.unique(),'Select all')
 
-points = pickle.load(open("data/points.pkl", "rb"))
-
-
-# Create global chart template
-mapbox_access_token = 'pk.eyJ1IjoiamFja2x1byIsImEiOiJjajNlcnh3MzEwMHZtMzNueGw3NWw5ZXF5In0.fk8k06T96Ml9CLGgKmk81w'
-
-layout = dict(
-    autosize=True,
-    automargin=True,
-    margin=dict(
-        l=30,
-        r=30,
-        b=20,
-        t=40
-    ),
-    hovermode="closest",
-    plot_bgcolor="#F9F9F9",
-    paper_bgcolor="#F9F9F9",
-    legend=dict(font=dict(size=10), orientation='h'),
-    title='Satellite Overview',
-    mapbox=dict(
-        accesstoken=mapbox_access_token,
-        style="light",
-        center=dict(
-            lon=-78.05,
-            lat=42.54
-        ),
-        zoom=7,
-    )
-)
+with urlopen('https://raw.githubusercontent.com/plotly/datasets/master/geojson-counties-fips.json') as response:
+    counties = json.load(response)
+    
 
 # Create app layout
 app.layout = html.Div(
@@ -81,23 +46,16 @@ app.layout = html.Div(
                 html.Div(
                     [
                         html.H2(
-                            'PROJECT NAME',
+                            'Career Outlook',
 
                         ),
                         html.H4(
-                            'Ocean‘s 4 ',
+                            'know your alumni',
                         )
                     ],
 
                     className='eight columns'
                 ),
-#                html.Div(
-#                    [
-#                  html.Img(
-#                     src="https://s3-us-west-1.amazonaws.com/plotly-tutorials/logo/new-branding/dash-logo-by-plotly-stripe.png")
-#                      ],
-#                    style={'aligh' : 'right','height':'10%', 'width':'0%'}
-#                 ),
             ],
             id="header",
             className='row',
@@ -111,66 +69,35 @@ app.layout = html.Div(
                             'Filter by school:',
                             className="control_label"
                         ),
-#                         dcc.RadioItems(
-#                             id='well_status_selector',
-#                             options=[
-#                                 {'label': 'All ', 'value': 'all'},
-#                                 {'label': 'Active only ', 'value': 'active'},
-#                                 {'label': 'Customize ', 'value': 'custom'}
-#                             ],
-#                             value='active',
-#                             labelStyle={'display': 'inline-block'},
-#                             className="dcc_control"
-#                         ),
-                        dcc.Dropdown(
-                            id='well_statuses',
-                            options=well_status_options,
-                            multi=True,
-                            value=list(WELL_STATUSES.keys()),
-                            className="dcc_control"
+                        dcc.Dropdown(schools, 
+                        id='School',
+                        placeholder='Filter by school',
+                        searchable = True
                         ),
-#                         dcc.Checklist(
-#                             id='lock_selector',
-#                             options=[
-#                                 {'label': 'Lock camera', 'value': 'locked'}
-#                             ],
-#                             value =[],
-#                             className="dcc_control"
-#                         ),
                         html.P(
                             'Filter by industry:',
                             className="control_label"
                         ),
-#                         dcc.RadioItems(
-#                             id='well_type_selector',
-#                             options=[
-#                                 {'label': 'All ', 'value': 'all'},
-#                                 {'label': 'Productive only ',
-#                                     'value': 'productive'},
-#                                 {'label': 'Customize ', 'value': 'custom'}
-#                             ],
-#                             value='productive',
-#                             labelStyle={'display': 'inline-block'},
-#                             className="dcc_control"
-#                         ),
-                        dcc.Dropdown(
-                            id='well_types',
-                            options=well_type_options,
-                            multi=True,
-                            value=list(WELL_TYPES.keys()),
-                            className="dcc_control"
+                        dcc.Dropdown(industries,
+                        id='Industry',
+                        placeholder='Filter by industry',
+                        searchable = True
                         ),
-                         html.P(
-                            'Filter by salary range:',
-                            className="control_label"
-                        ),
-                        dcc.RangeSlider(
-                            id='year_slider',
-                            min=1960,
-                            max=2017,
-                            value=[1990, 2010],
-                            className="dcc_control"
-                        ),
+                        html.Br(), 
+                        html.P(
+                            [html.Strong ('Data Source:') ,html.Br(),
+                            html.Li(['Alumni profile data:', html.Br(),
+                            'LinkedIn: ', 
+                             html.A("https://www.linkedin.com", href="https://www.linkedin.com"),
+                             html.Br()]),
+                            html.Li(['Salary data: ', html.Br(),
+                             'Bureau of Labor Statistics: ',
+                             html.A("https://www.bls.gov/oes/", href="https://www.bls.gov/oes/"),
+                             html.Br()]),
+                            html.Li(['Industry code data:', html.Br(),
+                            'Business Source Complete|EBSCO: ',
+                             html.A("https://www.ebsco.com", href="https://www.ebsco.com")])]
+                        )
                     ],
                     className="pretty_container four columns"
                 ),
@@ -178,16 +105,14 @@ app.layout = html.Div(
                     [
                         html.Div(
                             [
-                                dcc.Graph(
-                                    id='count_graph',
-                                )
+                                dcc.Graph(id='pie_graph1')
                             ],
                             id="countGraphContainer",
                             className="pretty_container"
                         )
                     ],
                     id="rightCol",
-                    className="eight columns"
+                    className="ten columns"
                 )
             ],
             className="row"
@@ -196,16 +121,16 @@ app.layout = html.Div(
             [
                 html.Div(
                     [
-                        dcc.Graph(id='main_graph')
+                        dcc.Graph(id="choropleth")
                     ],
-                    className='pretty_container eight columns',
+                    className='pretty_container fourteen columns',
                 ),
-                html.Div(
-                    [
-                        dcc.Graph(id='individual_graph')
-                    ],
-                    className='pretty_container four columns',
-                ),
+#                 html.Div(
+#                     [
+#                         dcc.Graph(id='individual_graph')
+#                     ],
+#                     className='pretty_container four columns',
+#                 ),
             ],
             className='row'
         ),
@@ -213,13 +138,13 @@ app.layout = html.Div(
             [
                 html.Div(
                     [
-                        dcc.Graph(id='pie_graph')
+                        dcc.Graph(id='bar_graph')
                     ],
-                    className='pretty_container five columns',
+                    className='pretty_container six columns',
                 ),
                 html.Div(
                     [
-                        dcc.Graph(id='aggregate_graph')
+                        dcc.Graph(id='sankey_graph')
                     ],
                     className='pretty_container seven columns',
                 ),
@@ -235,461 +160,194 @@ app.layout = html.Div(
 )
 
 
-# Helper functions
-def human_format(num):
-
-    magnitude = int(math.log(num, 1000))
-    mantissa = str(int(num / (1000**magnitude)))
-    return mantissa + ['', 'K', 'M', 'G', 'T', 'P'][magnitude]
-
-
-def filter_dataframe(df, well_statuses, well_types, year_slider):
-    dff = df[df['Well_Status'].isin(well_statuses)
-             & df['Well_Type'].isin(well_types)
-             & (df['Date_Well_Completed'] > dt.datetime(year_slider[0], 1, 1))
-             & (df['Date_Well_Completed'] < dt.datetime(year_slider[1], 1, 1))]
-    return dff
-
-
-def fetch_individual(api):
-    try:
-        points[api]
-    except:
-        return None, None, None, None
-
-    index = list(range(min(points[api].keys()), max(points[api].keys()) + 1))
-    gas = []
-    oil = []
-    water = []
-
-    for year in index:
-        try:
-            gas.append(points[api][year]['Gas Produced, MCF'])
-        except:
-            gas.append(0)
-        try:
-            oil.append(points[api][year]['Oil Produced, bbl'])
-        except:
-            oil.append(0)
-        try:
-            water.append(points[api][year]['Water Produced, bbl'])
-        except:
-            water.append(0)
-
-    return index, gas, oil, water
-
-
-def fetch_aggregate(selected, year_slider):
-
-    index = list(range(max(year_slider[0], 1985), 2016))
-    gas = []
-    oil = []
-    water = []
-
-    for year in index:
-        count_gas = 0
-        count_oil = 0
-        count_water = 0
-        for api in selected:
-            try:
-                count_gas += points[api][year]['Gas Produced, MCF']
-            except:
-                pass
-            try:
-                count_oil += points[api][year]['Oil Produced, bbl']
-            except:
-                pass
-            try:
-                count_water += points[api][year]['Water Produced, bbl']
-            except:
-                pass
-        gas.append(count_gas)
-        oil.append(count_oil)
-        water.append(count_water)
-
-    return index, gas, oil, water
-
 
 # Create callbacks
-@app.callback(Output('aggregate_data', 'data'),
-              [Input('well_statuses', 'value'),
-               Input('well_types', 'value'),
-               Input('year_slider', 'value')])
-def update_production_text(well_statuses, well_types, year_slider):
 
-    dff = filter_dataframe(df, well_statuses, well_types, year_slider)
-    selected = dff['API_WellNo'].values
-    index, gas, oil, water = fetch_aggregate(selected, year_slider)
-    return [human_format(sum(gas)), human_format(sum(oil)), human_format(sum(water))]
-
-# Radio -> multi
-
-
-@app.callback(Output('well_statuses', 'value'),
-              [Input('well_status_selector', 'value')])
-def display_status(selector):
-    if selector == 'all':
-        return list(WELL_STATUSES.keys())
-    elif selector == 'active':
-        return ['AC']
-    else:
-        return []
-
-
-# Radio -> multi
-@app.callback(Output('well_types', 'value'),
-              [Input('well_type_selector', 'value')])
-def display_type(selector):
-    if selector == 'all':
-        return list(WELL_TYPES.keys())
-    elif selector == 'productive':
-        return ['GD', 'GE', 'GW', 'IG', 'IW', 'OD', 'OE', 'OW']
-    else:
-        return []
-
-
-# Slider -> count graph
-@app.callback(Output('year_slider', 'value'),
-              [Input('count_graph', 'selectedData')])
-def update_year_slider(count_graph_selected):
-
-    if count_graph_selected is None:
-        return [1990, 2010]
-    else:
-        nums = []
-        for point in count_graph_selected['points']:
-            nums.append(int(point['pointNumber']))
-
-        return [min(nums) + 1960, max(nums) + 1961]
-
-
-# Selectors -> well text
-@app.callback(Output('well_text', 'children'),
-              [Input('well_statuses', 'value'),
-               Input('well_types', 'value'),
-               Input('year_slider', 'value')])
-def update_well_text(well_statuses, well_types, year_slider):
-
-    dff = filter_dataframe(df, well_statuses, well_types, year_slider)
-    return dff.shape[0]
-
-
-@app.callback(Output('gasText', 'children'),
-              [Input('aggregate_data', 'data')])
-def update_gas_text(data):
-    return data[0] + " mcf"
-
-
-@app.callback(Output('oilText', 'children'),
-              [Input('aggregate_data', 'data')])
-def update_oil_text(data):
-    return data[1] + " bbl"
-
-
-@app.callback(Output('waterText', 'children'),
-              [Input('aggregate_data', 'data')])
-def update_oil_text(data):
-    return data[2] + " bbl"
-
-# Selectors -> main graph
-
-
-@app.callback(Output('main_graph', 'figure'),
-              [Input('well_statuses', 'value'),
-               Input('well_types', 'value'),
-               Input('year_slider', 'value')],
-              [State('lock_selector', 'values'),
-               State('main_graph', 'relayoutData')])
-def make_main_figure(well_statuses, well_types, year_slider,
-                     selector, main_graph_layout):
-
-    dff = filter_dataframe(df, well_statuses, well_types, year_slider)
-
-    traces = []
-    for well_type, dfff in dff.groupby('Well_Type'):
-        trace = dict(
-            type='scattermapbox',
-            lon=dfff['Surface_Longitude'],
-            lat=dfff['Surface_latitude'],
-            text=dfff['Well_Name'],
-            customdata=dfff['API_WellNo'],
-            name=WELL_TYPES[well_type],
-            marker=dict(
-                size=4,
-                opacity=0.6,
-            )
-        )
-        traces.append(trace)
-
-    if (main_graph_layout is not None and 'locked' in selector):
-
-        lon = float(main_graph_layout['mapbox']['center']['lon'])
-        lat = float(main_graph_layout['mapbox']['center']['lat'])
-        zoom = float(main_graph_layout['mapbox']['zoom'])
-        layout['mapbox']['center']['lon'] = lon
-        layout['mapbox']['center']['lat'] = lat
-        layout['mapbox']['zoom'] = zoom
-    else:
-        lon = -78.05
-        lat = 42.54
-        zoom = 7
-
-    figure = dict(data=traces, layout=layout)
-    return figure
-
-
-# Main graph -> individual graph
-@app.callback(Output('individual_graph', 'figure'),
-              [Input('main_graph', 'hoverData')])
-def make_individual_figure(main_graph_hover):
-
-    layout_individual = copy.deepcopy(layout)
-
-    if main_graph_hover is None:
-        main_graph_hover = {'points': [{'curveNumber': 4,
-                                        'pointNumber': 569,
-                                        'customdata': 31101173130000}]}
-
-    chosen = [point['customdata'] for point in main_graph_hover['points']]
-    index, gas, oil, water = fetch_individual(chosen[0])
-
-    if index is None:
-        annotation = dict(
-            text='No data available',
-            x=0.5,
-            y=0.5,
-            align="center",
-            showarrow=False,
-            xref="paper",
-            yref="paper"
-        )
-        layout_individual['annotations'] = [annotation]
-        data = []
-    else:
-        data = [
-            dict(
-                type='scatter',
-                mode='lines+markers',
-                name='Gas Produced (mcf)',
-                x=index,
-                y=gas,
-                line=dict(
-                    shape="spline",
-                    smoothing=2,
-                    width=1,
-                    color='#fac1b7'
-                ),
-                marker=dict(symbol='diamond-open')
-            ),
-            dict(
-                type='scatter',
-                mode='lines+markers',
-                name='Oil Produced (bbl)',
-                x=index,
-                y=oil,
-                line=dict(
-                    shape="spline",
-                    smoothing=2,
-                    width=1,
-                    color='#a9bb95'
-                ),
-                marker=dict(symbol='diamond-open')
-            ),
-            dict(
-                type='scatter',
-                mode='lines+markers',
-                name='Water Produced (bbl)',
-                x=index,
-                y=water,
-                line=dict(
-                    shape="spline",
-                    smoothing=2,
-                    width=1,
-                    color='#92d8d8'
-                ),
-                marker=dict(symbol='diamond-open')
-            )
-        ]
-        layout_individual['title'] = dataset[chosen[0]]['Well_Name']
-
-    figure = dict(data=data, layout=layout_individual)
-    return figure
-
-
-# Selectors, main graph -> aggregate graph
-@app.callback(Output('aggregate_graph', 'figure'),
-              [Input('well_statuses', 'value'),
-               Input('well_types', 'value'),
-               Input('year_slider', 'value'),
-               Input('main_graph', 'hoverData')])
-def make_aggregate_figure(well_statuses, well_types, year_slider,
-                          main_graph_hover):
-
-    layout_aggregate = copy.deepcopy(layout)
-
-    if main_graph_hover is None:
-        main_graph_hover = {'points': [{'curveNumber': 4, 'pointNumber': 569,
-                                        'customdata': 31101173130000}]}
-
-    chosen = [point['customdata'] for point in main_graph_hover['points']]
-    well_type = dataset[chosen[0]]['Well_Type']
-    dff = filter_dataframe(df, well_statuses, well_types, year_slider)
-
-    selected = dff[dff['Well_Type'] == well_type]['API_WellNo'].values
-    index, gas, oil, water = fetch_aggregate(selected, year_slider)
-
-    data = [
-        dict(
-            type='scatter',
-            mode='lines',
-            name='Gas Produced (mcf)',
-            x=index,
-            y=gas,
-            line=dict(
-                shape="spline",
-                smoothing="2",
-                color='#F9ADA0'
-            )
-        ),
-        dict(
-            type='scatter',
-            mode='lines',
-            name='Oil Produced (bbl)',
-            x=index,
-            y=oil,
-            line=dict(
-                shape="spline",
-                smoothing="2",
-                color='#849E68'
-            )
-        ),
-        dict(
-            type='scatter',
-            mode='lines',
-            name='Water Produced (bbl)',
-            x=index,
-            y=water,
-            line=dict(
-                shape="spline",
-                smoothing="2",
-                color='#59C3C3'
-            )
-        )
-    ]
-    layout_aggregate['title'] = 'Aggregate: ' + WELL_TYPES[well_type]
-
-    figure = dict(data=data, layout=layout_aggregate)
-    return figure
-
-
-# Selectors, main graph -> pie graph
-@app.callback(Output('pie_graph', 'figure'),
-              [Input('well_statuses', 'value'),
-               Input('well_types', 'value'),
-               Input('year_slider', 'value')])
-def make_pie_figure(well_statuses, well_types, year_slider):
-
-    layout_pie = copy.deepcopy(layout)
-
-    dff = filter_dataframe(df, well_statuses, well_types, year_slider)
-
-    selected = dff['API_WellNo'].values
-    index, gas, oil, water = fetch_aggregate(selected, year_slider)
-
-    aggregate = dff.groupby(['Well_Type']).count()
-
-    data = [
-        dict(
-            type='pie',
-            labels=['Gas', 'Oil', 'Water'],
-            values=[sum(gas), sum(oil), sum(water)],
-            name='Production Breakdown',
-            text=['Total Gas Produced (mcf)', 'Total Oil Produced (bbl)',
-                  'Total Water Produced (bbl)'],
-            hoverinfo="text+value+percent",
-            textinfo="label+percent+name",
-            hole=0.5,
-            marker=dict(
-                colors=['#fac1b7', '#a9bb95', '#92d8d8']
-            ),
-            domain={"x": [0, .45], 'y':[0.2, 0.8]},
-        ),
-        dict(
-            type='pie',
-            labels=[WELL_TYPES[i] for i in aggregate.index],
-            values=aggregate['API_WellNo'],
-            name='Well Type Breakdown',
-            hoverinfo="label+text+value+percent",
-            textinfo="label+percent+name",
-            hole=0.5,
-            marker=dict(
-                colors=[WELL_COLORS[i] for i in aggregate.index]
-            ),
-            domain={"x": [0.55, 1], 'y':[0.2, 0.8]},
-        )
-    ]
-    layout_pie['title'] = 'Data Summary: {} to {}'.format(
-        year_slider[0], year_slider[1])
-    layout_pie['font'] = dict(color='#777777')
-    layout_pie['legend'] = dict(
-        font=dict(color='#CCCCCC', size='10'),
-        orientation='h',
-        bgcolor='rgba(0,0,0,0)'
+############################## pie plot ############################## 
+@app.callback(
+    Output("pie_graph1", "figure"), 
+    [Input("School", "value"),
+    Input("Industry", "value")]
     )
 
-    figure = dict(data=data, layout=layout_pie)
-    return figure
+def plot_pie(set_school,set_industry):
+    data = df[['search_school', 'current_NAICS', 'current_NAICS_title','current_avg_salary','major']]
+    data['major'] = data['major'].replace(['Business Administration, Management and Operations'],\
+                                          'Business Administration<br> and Management and Operations')
+    data['major'] = data['major'].replace(['Business Administration and Management, General'],\
+                                          'Business Administration<br> and Management, General ')
+    data['major'] = data['major'].replace(['Business, Management, Marketing, and Related Support Services'],\
+                                          'Business, Management, Marketing<br>and Related Support Services')
+    data['major'] = data['major'].replace(['Logistics, Materials, and Supply Chain Management'],\
+                                          'Logistics, Materials<br>and Supply Chain Management')
+    data = data.dropna()
+    # get input
+    if set_school == 'Select all' and  set_industry != 'Select all':
+        data = data[data['current_NAICS_title'] == set_industry]
+        major_data = data.groupby(['major']).count()
+        major_data = major_data[(major_data['search_school'] >= 3)]
+        major_data.reset_index(inplace=True)
+#         fig = px.pie(major_data, values='search_school', names='major',\
+#                      color_discrete_sequence = px.colors.diverging.Fall, height= 500)
+    elif set_industry == 'Select all' and set_school != 'Select all':
+        data = data[data['search_school'] == set_school]
+        major_data = data.groupby(['major']).count()
+        major_data = major_data[(major_data['search_school'] >= 3)]
+        major_data.reset_index(inplace=True)
+#         fig = px.pie(major_data, values='search_school', names='major',\
+#                      color_discrete_sequence = px.colors.diverging.Fall, height= 500)
+
+    elif set_industry == 'Select all' and set_school == 'Select all':
+        data = data
+        major_data = data.groupby(['major']).count()
+        major_data = major_data[(major_data['search_school'] >= 10)]
+        major_data.reset_index(inplace=True)
+
+    else:
+        data = data[(data['current_NAICS_title'] == set_industry) & \
+                    (data['search_school'] == set_school)]
+        major_data = data.groupby(['major']).count()
+        major_data = major_data[(major_data['search_school'] >= 3)]
+        major_data.reset_index(inplace=True)
+#         fig = px.pie(major_data, values='search_school', names='major',\
+#                      color_discrete_sequence = px.colors.diverging.Fall, height= 500)
+    fig = px.pie(major_data, values='search_school', names='major',\
+                 color_discrete_sequence = px.colors.diverging.Fall)
+    fig.update_traces(textposition='inside', textinfo='percent+label')
+    return fig
+############################## bar plot ############################## 
+
+@app.callback(
+    Output(component_id='bar_graph', component_property='figure'),
+    [Input("School", "value")]
+)
+
+def plot_bar(set_school):
+    data = df[['search_school', 'current_NAICS', 'current_NAICS_title','current_avg_salary']]
+    data = data.dropna()
+    # get input
+    if set_school == 'Select all':
+        data = data
+    else:
+        data = data[data['search_school'] == set_school]
+   
+    ## plot
+    data['number'] = data.groupby(['current_NAICS'])['current_avg_salary'].transform('count')
+    data = data.drop_duplicates(subset=['current_NAICS_title'], keep="last")
+    fig = px.bar(data, x='current_NAICS', y='number',
+                 hover_data=['current_avg_salary','current_NAICS_title'], color='number',
+                 color_continuous_scale='fall',
+                 labels={'current_NAICS': 'Industry Code', 'number':'Number of Alumni'}, height=600)
+    fig.update_layout({
+    'plot_bgcolor': 'rgba(0, 0, 0, 0)',
+    'paper_bgcolor': 'rgba(0, 0, 0, 0)',
+    })
+    fig.update(layout_coloraxis_showscale=False)
 
 
-# Selectors -> count graph
-@app.callback(Output('count_graph', 'figure'),
-              [Input('well_statuses', 'value'),
-               Input('well_types', 'value'),
-               Input('year_slider', 'value')])
-def make_count_figure(well_statuses, well_types, year_slider):
+    return fig
 
-    layout_count = copy.deepcopy(layout)
+############################## sankey plot ############################## 
+@app.callback(
+    Output(component_id='sankey_graph', component_property='figure'),
+    [Input("School", "value"),
+    Input("Industry", "value")]
+)
+def go_sankey(set_school, set_industry):
+    # get necessary columns
+    # get necessary columns
+    raw_data = df[['search_school', 'previous_NAICS_title', 'current_NAICS_title']]
+    data = raw_data.dropna()
+    # get input
+    if set_school == 'Select all' and  set_industry != 'Select all':
+        data = data[data['previous_NAICS_title'] == set_industry]
+    elif set_industry == 'Select all' and set_school != 'Select all':
+        data = data[data['search_school'] == set_school]
+    elif set_industry == 'Select all' and set_school == 'Select all':
+        data = data
+    else:
+        data = data[(data['previous_NAICS_title'] == set_industry) & \
+                    (data['search_school'] == set_school)]
 
-    dff = filter_dataframe(df, well_statuses, well_types, [1960, 2017])
-    g = dff[['API_WellNo', 'Date_Well_Completed']]
-    g.index = g['Date_Well_Completed']
-    g = g.resample('A').count()
-
-    colors = []
-    for i in range(1960, 2018):
-        if i >= int(year_slider[0]) and i < int(year_slider[1]):
-            colors.append('rgb(123, 199, 255)')
+    # only get different values  
+    data = data[data['previous_NAICS_title'] != data['current_NAICS_title']]
+    # only keep previous and current naics title
+    data = data[['previous_NAICS_title', 'current_NAICS_title']]
+    
+    # get nodes, source and target
+    all_nodes = data['previous_NAICS_title'].tolist() + data['current_NAICS_title'].tolist()
+    source_indices = [all_nodes.index(previous_NAICS_title) for previous_NAICS_title in data['previous_NAICS_title']]
+    target_indices = [all_nodes.index(current_NAICS_title, len(data['previous_NAICS_title'])) for current_NAICS_title in data['current_NAICS_title']]
+    
+    # create all source and target combinations
+    comb = []
+    for i in range(len(source_indices)):
+        source, target = (source_indices[i], target_indices[i])
+        comb.append((source, target))
+    # count occur
+    map_counts = {}
+    for tup in comb:
+        if tup not in map_counts:
+            map_counts[tup] = 1
         else:
-            colors.append('rgba(123, 199, 255, 0.2)')
+            map_counts[tup] += 1
+    # create values
+    values = []
+    for tup in comb:
+        values.append(map_counts[tup])
+    
+    # set colors
+    colors = px.colors.diverging.Fall
+    node_colors_mappings = dict([(node, np.random.choice(colors)) for node in all_nodes])
+    node_colors = [node_colors_mappings[node] for node in all_nodes]
+    edge_colors = [node_colors_mappings[node] for node in data['current_NAICS_title']]
+    
+    fig = go.Figure(data=[go.Sankey(node = dict(pad = 35, thickness = 10, line = dict(color = "black", width = 1.0),
+                    label =  all_nodes, color =  node_colors),
+                    link = dict(source =  source_indices, target =  target_indices, value =  values, color = edge_colors))])
+    
+    fig.update_layout(title_text="Industry Flow", height=600, font=dict(size = 10, color = 'black'))
+    return fig
 
-    data = [
-        dict(
-            type='scatter',
-            mode='markers',
-            x=g.index,
-            y=g['API_WellNo'] / 2,
-            name='All Wells',
-            opacity=0,
-            hoverinfo='skip'
-        ),
-        dict(
-            type='bar',
-            x=g.index,
-            y=g['API_WellNo'],
-            name='All Wells',
-            marker=dict(
-                color=colors
-            ),
-        ),
-    ]
 
-    layout_count['title'] = 'Completed Wells/Year'
-    layout_count['dragmode'] = 'select'
-    layout_count['showlegend'] = False
-    layout_count['autosize'] = True
+############################## map plot ############################## 
 
-    figure = dict(data=data, layout=layout_count)
-    return figure
+@app.callback(
+    Output("choropleth", "figure"), 
+    [Input("School", "value"),
+    Input("Industry", "value")]
+    )
+
+def display_choropleth(school, industry):
+
+    if school == 'Select all' and  industry != 'Select all':
+        num = df[df.current_NAICS_title == industry][['fips','location']].value_counts()
+    elif industry == 'Select all' and school != 'Select all':
+        num = df[df.search_school == school][['fips','location']].value_counts()
+    elif industry == 'Select all' and school == 'Select all':
+        num = df[['fips','location']].value_counts()
+    else:
+        num = df[(df.current_NAICS_title == industry) &
+             (df.search_school == school)][['fips','location']].value_counts()
+
+    num = num.reset_index()
+    num = num.rename({'index':'fips', 0:'counts'}, axis=1)
+
+    with urlopen('https://raw.githubusercontent.com/plotly/datasets/master/geojson-counties-fips.json') as response:
+        counties = json.load(response)
+
+    fig = px.choropleth_mapbox(num, geojson=counties, locations='fips', color='counts',
+                           color_continuous_scale='fall', hover_name='location',
+                           hover_data={'fips':False},
+                           range_color=(0, num.counts.max()),
+                           mapbox_style="carto-positron",
+                           zoom=3, center = {"lat": 37.0902, "lon": -95.7129},
+                           opacity=0.8,
+                           labels={'counts':'Number of Alumni', 'location':'location'}
+                          )
+    fig.update_layout(margin={"r":0,"t":0,"l":0,"b":0})
+
+    return fig
 
 
 # Main
