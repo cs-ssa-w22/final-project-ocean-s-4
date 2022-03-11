@@ -9,7 +9,7 @@ Main source of data:
 - Method: collection
 2. Alumni’ information: 
 - Source: LinkedIn 
-- Method: web-scrapping 
+- Method: web-scraping 
 
 Required Libraries:
 
