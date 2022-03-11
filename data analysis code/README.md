@@ -6,7 +6,7 @@ This folder contains our process of data analysis after getting detailed informa
 5. 'add_fips.ipynb'
 6. 'fips2county.tsv'
 7. 'handle_fips.ipynb'
-8. 'data' folder contains: 
+8. 'data' folder contains: \
    (1) 'linkedin_html' where alumni lists are downloaded from LinkedIn; 
    (2) finished alumni information of each university after implementing above data analysis codes;
    (3) 'complete.csv' combined finished alumni information of every university into one file.
