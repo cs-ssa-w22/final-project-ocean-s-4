@@ -1,4 +1,4 @@
-This folder contains our process of data analysis after getting detailed information of every alumni from LinkedIn.
+**This folder contains our process of data analysis after getting detailed information of every alumni from LinkedIn.**
 1. 'match industry code.ipynb' is the code for matching company (we scraped from LinkedIn) with industry and NAICS code.
 2. 'match salary.ipynb' is the code for matching sector-level NAICS code, and then matching NAICS code with industry average annual salary.
 3. 'Raw OES data from U.S. BUREAU OF LABOR STATISTICS' is the industry average annual salary datasource.
