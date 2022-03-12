@@ -16,16 +16,16 @@ Job seekers may find it hard to assess the feasibility of their career goal. One
 
 ### Main source of data:
 1. Individual profiles from LinkedIn: 
-   - LinkedIn: https://www.linkedin.com/
+- LinkedIn: https://www.linkedin.com/
 2. Occupational Wage Statistics:
-   - Bureau of Labor Statistics  https://www.bls.gov/oes/current/oes_research_estimates.html
-3. Industry NAICS Code:
-   - Bureau of Labor Statistics https://www.bls.gov/oes/current/oessrci.html
-4. Company Inforamtion:
-   - EBSCO Industries https://www.ebscoind.com/
-5. Geographical Data:
-   - Nominatim https://nominatim.org/ 
-   - U.S. DEPARTMENT OF AGRICULTURE https://www.nrcs.usda.gov/wps/portal/nrcs/detail/national/home/?cid=nrcs143_013697
+- Bureau of Labor Statistics  https://www.bls.gov/oes/current/oes_research_estimates.html
+4. Industry NAICS Code:
+- Bureau of Labor Statistics https://www.bls.gov/oes/current/oessrci.html
+6. Company Inforamtion:
+- EBSCO Industries https://www.ebscoind.com/
+8. Geographical Data:
+- Nominatim https://nominatim.org/ 
+- U.S. DEPARTMENT OF AGRICULTURE https://www.nrcs.usda.gov/wps/portal/nrcs/detail/national/home/?cid=nrcs143_013697
 
 ### How to run the interactive web-application 
 1. Git clone the whole project to local machine 
