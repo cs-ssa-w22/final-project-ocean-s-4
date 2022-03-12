@@ -18,7 +18,7 @@ Job seekers may find it hard to assess the feasibility of their career goal. One
 1. Individual profiles from LinkedIn: 
   - LinkedIn: https://www.linkedin.com/
 2. Occupational Wage Statistics:
-  - Bureau of Labor Statistics  https://www.bls.gov/oes/current/oes_research_estimates.html (May 2020)
+  - Bureau of Labor Statistics  https://www.bls.gov/oes/current/oes_research_estimates.htm (May 2020)
 3. Industry NAICS Code:
   - Bureau of Labor Statistics https://www.bls.gov/oes/2020/may/oessrci.htm
 4. Company Inforamtion:
