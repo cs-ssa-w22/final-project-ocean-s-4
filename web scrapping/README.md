@@ -1,4 +1,4 @@
-***This folder includes our LinkedIn web scraping codes.***
+**This folder includes our LinkedIn web scraping codes.**
 
 Our LinkedIn web scrapping contains two parts.
 1. 'search_page_scrapping_finished.ipynb': This code is used for scraping and downloading the alumni list of each target school.
