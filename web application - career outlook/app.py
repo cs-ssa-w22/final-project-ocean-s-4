@@ -171,6 +171,9 @@ app.layout = html.Div(
     )
 
 def plot_pie(set_school,set_industry):
+    '''
+    Draw pie plot for major distribution part.
+    '''
     data = df[['search_school', 'current_NAICS', 'current_NAICS_title','current_avg_salary','major']]
     data['major'] = data['major'].replace(['Business Administration, Management and Operations'],\
                                           'Business Administration<br> and Management and Operations')
@@ -223,6 +226,9 @@ def plot_pie(set_school,set_industry):
 )
 
 def plot_bar(set_school):
+    '''
+    Draw bar plot for industry distribution part.
+    '''
     data = df[['search_school', 'current_NAICS', 'current_NAICS_title','current_avg_salary']]
     data = data.dropna()
     # get input
@@ -254,6 +260,9 @@ def plot_bar(set_school):
     Input("Industry", "value")]
 )
 def go_sankey(set_school, set_industry):
+    '''
+    Draw sankey diagram for industry flow part.
+    '''
     # get necessary columns
     # get necessary columns
     raw_data = df[['search_school', 'previous_NAICS_title', 'current_NAICS_title']]
@@ -319,6 +328,9 @@ def go_sankey(set_school, set_industry):
     )
 
 def display_choropleth(school, industry):
+    '''
+    Draw the map.
+    '''
 
     if school == 'Select all' and  industry != 'Select all':
         num = df[df.current_NAICS_title == industry][['fips','location']].value_counts()
