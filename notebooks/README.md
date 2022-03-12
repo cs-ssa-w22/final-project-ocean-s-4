@@ -1,1 +1,1 @@
-This folder includes all our draft codes, they will not run successfully but are our explorations.
+This folder includes all our draft codes, they are our explorations.
