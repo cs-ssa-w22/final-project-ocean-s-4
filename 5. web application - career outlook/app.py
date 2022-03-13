@@ -1,16 +1,9 @@
 # Import required libraries
-import os
-import pickle
-import copy
-import datetime as dt
-import math
 import plotly.express as px
 from urllib.request import urlopen
-import requests
 import pandas as pd
-from flask import Flask
 import dash
-from dash.dependencies import Input, Output, State
+from dash.dependencies import Input, Output
 from dash import dcc
 from dash import html
 import pandas as pd

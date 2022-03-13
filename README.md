@@ -45,18 +45,11 @@ Job seekers may find it hard to assess the feasibility of their career goal. One
 |`os`|3.10.0|operating system for reading path and autoload files|
 |`pyautogui`|0.9.53|controls the mouse and keyboard to automate interactions with other applications|
 |`beautifulSoup`|4.9.0|pull data out of HTML and XML files. |
-|`requests`|2.27.1|HTTP library for python to scrap and get urls|
 |`time`|3.10.2|provides various time-related functions and supports for scraping|
 |`random`|3.10.2|implements pseudo-random number generators for various distributions.|
 |`plotly`|5.6.0|an interactive, open-source, and browser-based graphing library, visualize industries and maps|
 |`dash`|2.2.0|gives a point-&-click interface to models written in Python|
-|`pywebcopy`|6.3.0|supports for web scraping and archiving tool in any online website|
 |`urllib`|1.26.8|collects several modules for working with URLs|
-|`pickle`|0.0.12|inmplements binary protocols for serializing and de-serializing|
-|`copy`|3.10.2|change one copy without changing the other|
-|`datetime`|3.10.2|supplies classes for manipulating dates and times|
-|`math`|3.10.2|provides access to the mathematical functions|
-|`flask`|2.0.0|lightweight WSGI web application helps to complete our application|
 |`json`|3.10.2|converts JSON documents|
 |`matplotlib`|3.5.1|Python plotting package|
 
