@@ -7,12 +7,14 @@
 Job seekers may find it hard to assess the feasibility of their career goal. One of the many excellent resources college graduates have access to is the alumni. With similar educational background and experience, alumni association can be used as job seeker’s career assessment tool.  Our project attempts to create a web-application that assist job hunters to evaluate their career goal through alumni’s information. Based on users’ input of education backgrounds, ideal occupation position, expected salaries, our interactive web-application will match users input with alumni’s information, and visualize matching alumni’s current occupation, location of employment, career path, as a reference for users’ self-assessment.
 
 ### Git repository structure:
-1. data processing:  process of data analysis after getting detailed information of every alumni from LinkedIn
-2. data: all the data we scraped and used in this project
-3. notebooks: draft codes
-4. school list: process of selecting target universities
+1. school list: process of selecting target universities
+2. web scrapping:  includes LinkedIn web scraping codes 
+3. data processing:  process of data analysis after getting detailed information of every alumni from LinkedIn
+4. data: all the data we scraped and used in this project
 5. web application - career outlook: interactive web-application code
-6. web scrapping:  includes LinkedIn web scraping codes 
+6. notebooks: draft codes
+
+
 
 ### Main source of data:
 1. Individual profiles from LinkedIn: 
